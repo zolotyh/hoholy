@@ -1,0 +1,1234 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Деревотряска</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/wrike.css">
+    <link rel="stylesheet" href="style.css" media="all">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+    <style>
+			body .reveal {
+				font-size: 8.5vh;
+			}
+			.reveal pre > code {
+				font-size: 4vh;
+				line-height: 1.5;
+				max-height: 800px;
+			}
+      .reveal .solid {
+        width: 2ex;
+        display:inline-block;
+        text-align:center;
+        font-weight: 400;
+      }
+      .reveal li {
+        margin-bottom: .5em;
+      }
+      .reveal pre.opacity * {
+        color: rgba(255,255,255, 0.3) !important;
+      }
+      .reveal .tag {
+        width: 12ex;
+        display:inline-block;
+        float: left;
+        font-weight:500;
+      }
+
+      .reveal pre.opacity mark,
+      .reveal pre.opacity mark * {
+        color: rgba(255,255,255, 1) !important;
+        background-color:transparent;
+      }
+
+      .reveal ul.solid-ul li {
+        list-style:none;
+      }
+
+      .hidden {
+        visibility:hidden;
+      }
+
+      .reveal .framework-logos {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .reveal .framework-logos > div {
+        width: 20%;
+      }
+      .reveal .framework-logos > div > img{
+        max-width: 100%;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+			.reveal .red {
+				color: #B82828 !important;
+			}
+
+    </style>
+	</head>
+	<body>
+		<div class="reveal">
+      <div class="slides">
+        <section>
+          <p>
+            Архитектурные этюды: как не угробить архитектуру своего проекта
+          </p>
+        </section>
+				<section>
+					<h2>Чего не будет</h2>
+					<ul>
+						<li class="fragment">К классам стейт примотан изолентой</li>
+						<li class="fragment">К функциям здравый смысл примотан изолентой</li>
+						<li class="fragment">Все используйте Dart, <span class="fragment">Typescript,</span> <span class="fragment">Java,</span> <span class="fragment">Python</span>
+						</li>
+						<li class="fragment">Рассказа о нашей крутой архитектуре</li>
+					</ul>
+				</section>
+				<section>
+					<h2>О чем доклад</h2>
+					<ul>
+						<li class="fragment">Архитектура</li>
+						<li class="fragment">Типичные ошибки</li>
+						<li class="fragment">Решения</li>
+					</ul>
+				</section>
+				<section>
+					<p>
+					Доклад о лени
+					</p>
+					<img src="img/_1.png" alt="">
+				</section>
+        <section  data-transition="slide-in none">
+          <div class="framework-logos">
+            <div>
+              <img src="img/react.svg" alt="">
+            </div>
+						<div>
+							<img class="fragment" src="img/ember-tomster.svg" alt="">
+						</div>
+            <div>
+              <img class="fragment" src="img/angular.svg" alt="">
+            </div>
+            <div>
+              <img class="fragment" src="img/vue.svg" alt="">
+            </div>
+          </div>
+        </section>
+        <section  data-transition="none slide-out">
+          <div class="framework-logos">
+            <div>
+            </div>
+            <div>
+              <img src="img/vue.svg" alt="">
+            </div>
+            <div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <img width="890px" src="img/todo.png" alt="">
+        </section>
+				<section>
+					Данные должны сохраняться на сервере
+				</section>
+        <section>
+          <p>По счастливой случайности у нас есть код</p>
+        </section>
+				<section>
+					<img src="img/todomvc2.png" alt="" style="max-width: 720px">
+				</section>
+        <section>
+          <pre><code data-trim style="font-size: 11px">
+/ Full spec-compliant TodoMVC with localStorage persistence
+// and hash-based routing in ~120 effective lines of JavaScript.
+
+// localStorage persistence
+var STORAGE_KEY = 'todos-vuejs-2.0'
+var todoStorage = {
+  fetch: function () {
+    var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    todos.forEach(function (todo, index) {
+      todo.id = index
+    })
+    todoStorage.uid = todos.length
+    return todos
+  },
+  save: function (todos) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+  }
+}
+
+// visibility filters
+var filters = {
+  all: function (todos) {
+    return todos
+  },
+  active: function (todos) {
+    return todos.filter(function (todo) {
+      return !todo.completed
+    })
+  },
+  completed: function (todos) {
+    return todos.filter(function (todo) {
+      return todo.completed
+    })
+  }
+}
+
+// app Vue instance
+var app = new Vue({
+  // app initial state
+  data: {
+    todos: todoStorage.fetch(),
+    newTodo: '',
+    editedTodo: null,
+    visibility: 'all'
+  },
+
+  // watch todos change for localStorage persistence
+  watch: {
+    todos: {
+      handler: function (todos) {
+        todoStorage.save(todos)
+      },
+      deep: true
+    }
+  },
+
+  // computed properties
+  // http://vuejs.org/guide/computed.html
+  computed: {
+    filteredTodos: function () {
+      return filters[this.visibility](this.todos)
+    },
+    remaining: function () {
+      return filters.active(this.todos).length
+    },
+    allDone: {
+      get: function () {
+        return this.remaining === 0
+      },
+      set: function (value) {
+        this.todos.forEach(function (todo) {
+          todo.completed = value
+        })
+      }
+    }
+  },
+
+  filters: {
+    pluralize: function (n) {
+      return n === 1 ? 'item' : 'items'
+    }
+  },
+
+  // methods that implement data logic.
+  // note there's no DOM manipulation here at all.
+  methods: {
+    addTodo: function () {
+      var value = this.newTodo && this.newTodo.trim()
+      if (!value) {
+        return
+      }
+      this.todos.push({
+        id: todoStorage.uid++,
+        title: value,
+        completed: false
+      })
+      this.newTodo = ''
+    },
+
+    removeTodo: function (todo) {
+      this.todos.splice(this.todos.indexOf(todo), 1)
+    },
+
+    editTodo: function (todo) {
+      this.beforeEditCache = todo.title
+      this.editedTodo = todo
+    },
+
+    doneEdit: function (todo) {
+      if (!this.editedTodo) {
+        return
+      }
+      this.editedTodo = null
+      todo.title = todo.title.trim()
+      if (!todo.title) {
+        this.removeTodo(todo)
+      }
+    },
+
+    cancelEdit: function (todo) {
+      this.editedTodo = null
+      todo.title = this.beforeEditCache
+    },
+
+    removeCompleted: function () {
+      this.todos = filters.active(this.todos)
+    }
+  },
+
+  // a custom directive to wait for the DOM to be updated
+  // before focusing on the input field.
+  // http://vuejs.org/guide/custom-directive.html
+  directives: {
+    'todo-focus': function (el, binding) {
+      if (binding.value) {
+        el.focus()
+      }
+    }
+  }
+})
+
+// handle routing
+function onHashChange () {
+  var visibility = window.location.hash.replace(/#\/?/, '')
+  if (filters[visibility]) {
+    app.visibility = visibility
+  } else {
+    window.location.hash = ''
+    app.visibility = 'all'
+  }
+}
+
+window.addEventListener('hashchange', onHashChange)
+onHashChange()
+
+// mount
+app.$mount('.todoapp')
+          </code></pre>
+        </section>
+        <section data-transition="slide-in">
+          <pre><code data-trim>
+var todoStorage = {
+  fetch: function () {
+    var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    todos.forEach(function (todo, index) {
+      todo.id = index
+    })
+    todoStorage.uid = todos.length
+    return todos
+  }
+  // ...
+}
+          </code></pre>
+        </section>
+        <section data-transition="none">
+          <pre><code data-trim data-noescape>
+  fetch: function () {
+    var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    todos.forEach(function (todo, index) {
+      todo.id = index
+    })
+    todoStorage.uid = todos.length
+    return todos
+  }
+          </code></pre>
+        </section>
+        <section data-transition="none">
+          <pre><code data-trim data-noescape>
+  fetch: function () {
+    <mark>var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')</mark>
+    todos.forEach(function (todo, index) {
+      todo.id = index
+    })
+    todoStorage.uid = todos.length
+    return todos
+  }
+          </code></pre>
+        </section>
+        <section data-transition="slide-out">
+          <pre><code data-trim data-noescape>
+  fetch: function () {
+    var todos = JSON.parse(<mark>localStorage</mark>.getItem(STORAGE_KEY) || '[]')
+    todos.forEach(function (todo, index) {
+      todo.id = index
+    })
+    todoStorage.uid = todos.length
+    return todos
+  }
+          </code></pre>
+        </section>
+				<section>
+					<blockquote>
+«Плохие программисты думают о коде. Хорошие программисты думают о структурах данных и их взаимосвязях»
+					</blockquote>
+				</section>
+        <section data-transition="slide-in">
+          <pre><code data-trim="">
+fetch(url)
+  .then(response => response.json())
+  .then(data => console.log(data));
+          </code></pre>
+        </section>
+        <section data-transition="slide-out">
+          <pre><code data-trim="" data-noescape>
+fetch(url)
+  <mark>.then(response =&gt; response.json())</mark>
+  .then(data =&gt; console.log(data));
+          </code></pre>
+        </section>
+        <section data-transition="slide-out">
+          <pre><code data-trim="" data-noescape>
+const url = 'https://wrike.com/api/tasks';
+axios.get(url)
+  .then(response =&gt; console.log(response));
+          </code></pre>
+        </section>
+        <section>
+          Будте оптимистичны!
+        </section>
+				<section>
+					<img src="img/op1.png" alt="">
+				</section>
+				<section>
+					<img src="img/op2.png" alt="">
+				</section>
+				<section>
+					<img src="img/op3.png" alt="">
+				</section>
+        <section>
+					<p>PouchDB</p>
+          <img src="img/pouchdb.png" alt="">
+        </section>
+        <section>
+          <pre><code data-noescape style="font-size: 6vh" data-trim>
+var db = new PouchDB('dbname');
+
+<span class="fragment">db.put({ /* ... */ });</span>
+
+<span class="fragment">db.changes().on('change', function() {
+  console.log('Пора обновить данные');
+});</span>
+          </code></pre>
+        </section>
+        <section>
+          Конфликты
+        </section>
+        <section>
+          CRDT
+          <p class="fragment">
+						<b class="red">c</b>onflict-free <b class="red">r</b>eplicated <b class="red">d</b>ata <b class="red">t</b>ype
+          </p>
+					<p class="fragment">
+						Мы разрулим все конфликты когда-нибудь потом
+					</p>
+        </section>
+				<section>
+					<img src="img/facepalm.png" alt="">
+				</section>
+        <section>
+          Это я, но в 2010 году
+        </section>
+				<section>
+					<p>Архитектура</p>
+				</section>
+				<section>
+					<p>Решения</p>
+					<ul>
+						<li class="fragment">
+							Важные
+						</li>
+						<li class="fragment">
+							Неотложные
+						</li>
+					</ul>
+				</section>
+				<section data-transition="slide-in">
+					<p>Уровни архитектуры</p>
+					<img src="img/s1.svg" alt="">
+				</section>
+				<section data-transition="none">
+					<p>Уровни архитектуры</p>
+					<img src="img/s2.svg" alt="">
+				</section>
+				<section data-transition="none">
+					<p>Уровни архитектуры</p>
+					<img src="img/s3.svg" alt="">
+				</section>
+				<section data-transition="none">
+					<p>Уровни архитектуры</p>
+					<img src="img/s4.svg" alt="">
+				</section>
+				<section data-transition="none">
+					<p>Уровни архитектуры</p>
+					<img src="img/s5.svg" alt="">
+				</section>
+				<section data-transition="slide-out">
+					<p>Уровни архитектуры</p>
+					<img src="img/s6.svg" alt="">
+				</section>
+				<section data-transition="slide-in">
+					<img src="img/q1.svg" alt="">
+				</section>
+				<section data-transition="none">
+					<img src="img/q2.svg" alt="">
+				</section>
+				<section data-transition="none">
+					<img src="img/q3.svg" alt="">
+				</section>
+				<section data-transition="none">
+					<img src="img/q4.svg" alt="">
+				</section>
+				<section data-transition="slide-out">
+					<img src="img/q5.svg" alt="">
+				</section>
+				<section>
+					<p>&mdash; А что делать мне?</p>
+					<p class="fragment">&mdash; Будь проще и ленивее</p>
+				</section>
+				<section data-background-video="img/1.mp4">
+				</section>
+				<section>
+					<p>
+						Один из принципов Lean
+					</p>
+					<p class="fragment">Предельно отсроченное принятие решений</p>
+				</section>
+        <section data-transition="slide-in none">
+            <pre><code data-trim data-noescape>function fetch(){
+  <span class="fragment">var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')</span>
+
+  <span class="fragment">todos.forEach(function (todo, index) {
+    todo.id = index
+  })</span>
+
+  <span class="fragment">todoStorage.uid = todos.length</span>
+
+  <span class="fragment">return todos</span>
+}
+            </code></pre>
+        </section>
+				<section>
+					<p>
+						Какой следующий шаг?
+					</p>
+					<p class="fragment">Все-таки нужно подключить к серверу</p>
+				</section>
+				<section>
+					А как же тесты?!
+				</section>
+        <section data-transition="slide-in">
+          <ol>
+            <li>Данные прочитаны из localStorage</li>
+            <li class="fragment">Всем данным выставлен правильный id</li>
+            <li class="fragment">Записан правильный UID</li>
+          </ol>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>function fetch(){
+  <s>var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')</s>
+
+  todos.forEach(function (todo, index) {
+    todo.id = index
+  })
+
+  todoStorage.uid = todos.length
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>function fetch(offset, limit){
+  <s>var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')</s>
+  var todos = api.fetch(`/api/tasks?offset=${offset}&limit=${limit}`)
+
+  todos.forEach(function (todo, index) {
+    todo.id = index
+  })
+
+  todoStorage.uid = todos.length
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>function fetch(offset, limit){
+  <s>var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')</s>
+  var todos = api.fetch(`/api/tasks?offset=<mark>${offset}</mark>&limit=<mark>${limit}</mark>`)
+
+  todos.forEach(function (todo, index) {
+    todo.id = index
+  })
+
+  todoStorage.uid = todos.length
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>function fetch(offset, limit){
+  var todos = api.fetch(`/api/tasks?offset=${offset}&limit=${limit}`)
+
+<s>  todos.forEach(function (todo, index) {
+    todo.id = index
+  })</s>
+
+  todoStorage.uid = todos.length
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>function fetch(offset, limit){
+  var todos = api.fetch(`/api/tasks?offset=${offset}&limit=${limit}`)
+
+<s>  todos.forEach(function (todo, index) {
+    todo.id = index
+  })</s>
+  todos.forEach(/*Кастомный обработчик*/);
+
+  todoStorage.uid = todos.length
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>function fetch(offset, limit){
+  var todos = api.fetch(`/api/tasks?offset=${offset}&limit=${limit}`)
+
+  todos.forEach(/*Кастомный обработчик*/);
+
+  <s>todoStorage.uid = todos.length</s>
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>function fetch(offset, limit){
+  var todos = api.fetch(`/api/tasks?offset=${offset}&limit=${limit}`)
+
+  todos.forEach(/*Кастомный обработчик*/);
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>function fetch(offset, limit){
+  <s>var todos = api.fetch(`/api/tasks?offset=${offset}&limit=${limit}`)</s>
+
+  todos.forEach(/*Кастомный обработчик*/);
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>function fetch(offset, limit){
+  // ГР*БАНАЯ АСИНХРОННОСТЬ
+  <s>var todos = api.fetch(`/api/tasks?offset=${offset}&limit=${limit}`)</s>
+
+  todos.forEach(/*Кастомный обработчик*/);
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape><mark>async</mark> function fetch(offset, limit){
+  // ГР*БАНАЯ АСИНХРОННОСТЬ
+  var todos = <mark>await</mark> api.fetch(`/api/tasks?offset=${offset}&limit=${limit}`)
+
+  todos.forEach(/*Кастомный обработчик*/);
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>async function fetch(offset, limit){
+  var todos = await api.fetch(`/api/tasks?offset=${offset}&limit=${limit}`)
+
+  todos.forEach(/*Кастомный обработчик*/);
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>async function fetch(offset, limit){
+  var todos = await api.fetch(<s>`/api/tasks?offset=${offset}&limit=${limit}`</s>)
+
+  todos.forEach(/*Кастомный обработчик*/);
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>async function fetch(offset, limit){
+  var todos = await api.getTasks(offset, limit)
+
+  todos.forEach(/*Кастомный обработчик*/);
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+        <section>
+          Как вы думаете, что станет с тестами?
+        </section>
+        <section data-transition="slide-in">
+          <ol>
+            <li>Данные прочитаны из localStorage</li>
+            <li>Всем данным выставлен правильный id</li>
+            <li>Записан правильный UID</li>
+          </ol>
+        </section>
+        <section data-transition="none">
+          <ol>
+						<li><s>Данные прочитаны из localStorage</s></li>
+            <li>Всем данным выставлен правильный id</li>
+            <li>Записан правильный UID</li>
+          </ol>
+        </section>
+        <section data-transition="none">
+          <ol>
+						<li><s>Данные прочитаны из localStorage</s></li>
+						<li><s>Всем данным выставлен правильный id</s></li>
+            <li>Записан правильный UID</li>
+          </ol>
+        </section>
+        <section data-transition="none">
+          <ol>
+						<li><s>Данные прочитаны из localStorage</s></li>
+						<li><s>Всем данным выставлен правильный id</s></li>
+						<li><s>Записан правильный UID</s></li>
+          </ol>
+        </section>
+				<section>
+					Нужен рефакторинг
+				</section>
+				<section data-transition="none">
+					SOLID
+				</section>
+				<section data-transition="slide-in">
+					<ul>
+						<li class="fragment">S - Single Responsibility Principle</li>
+						<li class="fragment">O - Open Closed Principle</li>
+						<li class="fragment">L - Liskov Substitution Principle</li>
+						<li class="fragment">I - Interface Segregation Principle</li>
+						<li class="fragment">D - Dependency Inversion Principle</li>
+					</ul>
+				</section>
+				<section slide-out>
+					<ul>
+						<li >S - Принцип единственной ответственности</li>
+						<li >O - Принцип открытости/закрытости</li>
+						<li >L - Принцип подстановки Барбары Лисков</li>
+						<li >I - Принцип разделения интерфейса</li>
+						<li >D - Принцип инверсии зависимостей</li>
+					</ul>
+				</section>
+				<section data-transition="none">
+					<mark>S</mark>OLID
+					<p class="fragment">
+						Класс должен иметь только одну причину для изменения
+					</p>
+				</section>
+				<section>
+					<p>
+						&mdash; Какие на йух классы!?
+					</p>
+				</section>
+				<section>
+					<p>До</p>
+					<pre><code data-trim data-noescape style="width: 50%;margin: 0 auto;">
+function addAndMultiply(<span class="fragment">x, y, z</span>){
+  <span class="fragment">return (x + y) * z</span>
+}
+					</code></pre>
+				</section>
+				<section>
+					<p>После</p>
+					<pre><code data-trim data-noescape style="width: 50%; margin: 0 auto;">
+<span class="fragment">function add(x1, x2){ return x1 + x2; }</span>
+
+<span class="fragment">function multiple(x1, x2){ return x1 * x2; }</span>
+
+<span class="fragment">function addAndMultiply(x1, x2, x3){
+    return multiple(add(x1, x2), x3)
+}</span>
+
+<span class="fragment">function multipleAndAdd(x1, x2, x3){
+    return add(multiple(x1, x2), x3)
+}</span>
+					</code></pre>
+				</section>
+				<section>
+					Принципы тоже нужно применять лениво
+				</section>
+        <section data-transition="none">
+            <pre><code data-trim data-noescape>async function fetch(offset, limit){
+  var todos = await api.getTasks(offset, limit);
+  todos.forEach(/*Кастомный обработчик*/);
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+				<section data-transition="none">
+            <pre><code data-trim data-noescape>async function fetch(offset, limit){
+  <s>var todos = await api.getTasks(offset, limit);</s>
+  <s>todos.forEach(/*Кастомный обработчик*/);</s>
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+				<section data-transition="none">
+            <pre><code data-trim data-noescape>async function fetch(offset, limit){
+  var todos = await getTasks(offset, limit)
+
+  todoStorage.uid = /*другой способ получения*/
+
+  return todos
+}
+            </code></pre>
+        </section>
+				<section data-transition="none">
+            <pre><code data-trim data-noescape>async function fetch(offset, limit){
+  var todos = await getTasks(offset, limit)
+
+  <s>todoStorage.uid = /*другой способ получения*/</s>
+
+  return todos
+}
+            </code></pre>
+        </section>
+				<section data-transition="none">
+            <pre><code data-trim data-noescape>async function fetch(offset, limit){
+  var todos = await getTasks(offset, limit)
+
+  setStorageHash(todoStorage, todos)
+
+  return todos
+}
+            </code></pre>
+        </section>
+				<section data-transition="none">
+						<pre><code data-trim data-noescape>
+async function fetch(offset, limit){
+  var todos = await getTasks(offset, limit) <span class="fragment" data-fragment-index="1">// Получить задачи</span>
+
+  setStorageHash(todoStorage, todos) <span class="fragment" data-fragment-index="2">// Обновить хеш, для вью</span>
+
+  return todos
+}
+            </code></pre>
+        </section>
+				<section>
+					<p>
+						Нужно протестировать
+					</p>
+					<ul style="font-size: 7vh">
+						<li class="fragment" data-fragment-index="1">Функции вызвались в нужном порядке
+							<span class="fragment" data-fragment-index="5" >(пока забьем)</span>
+						</li>
+						<li class="fragment" data-fragment-index="2">
+							Мы правильно получили данные
+							<span class="fragment" data-fragment-index="4" >(в отдельной функции)</span>
+						</li>
+						<li class="fragment" data-fragment-index="3">
+							Мы правильно посчитали хэш
+							<span class="fragment" data-fragment-index="4" >(в отдельной функции)</span>
+						</li>
+					</ul>
+        </section>
+				<section data-transition="none">
+					<p>
+						Типизация для наглядности
+					</p>
+						<pre><code data-trim data-noescape>
+async function fetch(offset, limit){
+  var todos = await getTasks(offset, limit)
+
+  setStorageHash(todoStorage, todos)
+
+  return todos
+}
+            </code></pre>
+        </section>
+				<section data-transition="none">
+					<p>
+						Типизация для наглядности
+					</p>
+					<pre><code data-trim data-noescape>
+async function fetch(offset: Number, limit: Number): Promise &lt;Array&lt;ToDo&gt;&gt; {
+  var todos: Array&lt;ToDo&gt; = await getTasks(offset, limit)
+
+  setStorageHash(todoStorage, todos)
+
+  return todos
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<mark>SO</mark>LID
+					<p class="fragment">
+						открыто для расширения, но закрыто для изменения
+					</p>
+				</section >
+				<section data-transition="slide-in">
+					<pre><code data-trim data-noescape>
+async function fetch(offset: Number, limit: Number): Promise &lt;Array&lt;ToDo&gt;&gt; {
+  var todos: Array&lt;ToDo&gt; = await getTasks(offset, limit)
+
+  setStorageHash(todoStorage, todos)
+
+  return todos
+}
+					</code></pre>
+				</section>
+				<section data-transition="slide-out">
+					<pre><code data-trim data-noescape>
+async function fetch(offset: Number, limit: Number): Promise &lt;Array&lt;ToDo&gt;&gt; {
+  var todos: Array&lt;ToDo&gt; = await getTasks(offset, limit)
+
+  <mark>setStorageHash(todoStorage, todos)</mark>
+
+  return todos
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+function setStorageHash(task: Array&lt;ToDo&gt;, todoStorage: TodoStorage) {
+ todoStorage.uid = tasks.length;
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+function setStorageHash(task: <mark>Array&lt;ToDo&gt;</mark>, todoStorage: TodoStorage) {
+ todoStorage.uid = items.length;
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+function setStorageHash(items: Array, todoStorage: TodoStorage) {
+ todoStorage.uid = items.length;
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+function setStorageHash(items: Array, todoStorage: <mark>TodoStorage</mark>) {
+ todoStorage.uid = items.length;
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+function setStorageHash(items: Array, storage: Storage) {
+ storage.uid = items.length;
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+function setStorageHashByLength(items: Array, storage: Storage) {
+ storage.uid = items.length;
+}
+					</code></pre>
+				</section>
+				<section>
+					<mark>SO</mark>L<mark>I</mark>D
+					<p class="fragment">
+					I &mdash; принцип разделения интерфейса
+					</p>
+				</section>
+				<section>
+					Клиенты не должны зависеть от методов, которые они не используют
+				</section>
+				<section>
+					Загружаем что-то еще
+				</section>
+				<section data-transition="slide-in">
+					<pre><code data-trim data-noescape>
+async function fetch(offset: Number, limit: Number): Promise &lt;Array&lt;ToDo&gt;&gt; {
+  var todos: Array&lt;ToDo&gt; = await getTasks(offset, limit)
+
+  setStorageHash(todoStorage, todos)
+
+  return todos
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+async function fetchTasks(offset: Number, limit: Number): Promise &lt;Array&lt;ToDo&gt;&gt; {
+  var todos: Array&lt;ToDo&gt; = await getTasks(offset, limit)
+
+  setStorageHash(todoStorage, todos)
+
+  return todos
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+async function fetchUsers(offset: Number, limit: Number): Promise &lt;Array&lt;User&gt;&gt; {
+  var users: Array&lt;User&gt; = await getUsers(offset, limit)
+
+  setStorageHash(usersStorage, users)
+
+  return users
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+async function fetchUsers(offset: Number, limit: Number): Promise &lt;<mark>Array&lt;User&gt;</mark>&gt; {
+  var users: <mark>Array&lt;User&gt;</mark> = await getUsers(offset, limit)
+
+  setStorageHash(usersStorage, users)
+
+  return users
+}
+					</code></pre>
+				</section>
+				<section data-transition="slide-out">
+					<pre><code data-trim data-noescape>
+async function fetch(offset: Number, limit: Number): Promise &lt;Array&lt;any&gt;&gt; {
+  var items: Array&lt;any&gt; = await getUsers(offset, limit)
+
+  setStorageHash(usersStorage, users)
+
+  return users
+}
+					</code></pre>
+				</section>
+				<section>
+					<mark>SO</mark>L<mark>ID</mark>
+				</section>
+				<section>
+					 <p>D - Принцип инверсии зависимостей</p>
+				</section>
+				<section>
+          <p data-fragment-index="0">
+            Модули верхних уровней не должны зависеть от модулей нижних уровней. Оба типа модулей должны зависеть от абстракций.
+          </p>
+          <p class="fragment " data-fragment-index="1">
+            Абстракции не должны зависеть от деталей. Детали должны зависеть от абстракций.
+          </p>
+				</section>
+				<section data-transition="slide-in">
+					<pre><code data-trim data-noescape>
+async function fetch(offset: Number, limit: Number): Promise &lt;Array&lt;any&gt;&gt; {
+  var items: [] = await <mark>getUsers</mark>(offset, limit)
+  setStorageHash(<mark>usersStorage</mark>, users)
+  return users
+}
+					</code></pre>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape>
+<span>interface Fetcher {
+	fetch(offset: Number, limit: Number): Promise<any>
+}</span>
+
+<span class="fragment">class UserFetcher implements Fetcher{/*...*/}</span>
+<span class="fragment">class TaskFetcher implements Fetcher{/*...*/}</span>
+					</code></pre>
+				</section>
+
+				<section data-transition="">
+					<pre><code data-trim data-noescape>
+async function fetch(/*...*/storage: Storage, <mark>fetcher: Fetcher</mark>)/*...*/ {
+  var items: Array&lt;any&gt; = await <mark>fetcher.fetch</mark>(offset, limit)
+  setStorageHash(<mark>storage</mark>, users)
+  return users
+}
+					</code></pre>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape>
+interface Fetcher {
+    fetch(offset: Number, limit: Number)
+}
+class UserFetcher implements Fetcher {
+    fetch(offset: Number, limit: Number) {
+        /* ... */
+    }
+}
+					</code></pre>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape>
+async function fetchUsersFromServer(offset: Number, limit: Number)
+  : Promise&lt;Array&lt;any&gt;&gt; {/*...*/};
+
+<span class="fragment">async function fetchTasksFromServer(offset: Number, limit: Number)
+  : Promise&lt;Array&lt;any&gt;&gt; {/*...*/};
+</span>
+					</code></pre>
+				</section>
+				<section data-transition="">
+					<pre><code data-trim data-noescape>
+async function fetch(/*...*/storage: Storage, fetch: Function)/*...*/ {
+  var items: Array&lt;any&gt; = await fetch(offset, limit)
+  setStorageHash(storage, users)
+  return users
+}
+async function fetchUsersFromServer(offset: Number, limit: Number)
+  : Promise&lt;Array&lt;any&gt;&gt; {/*...*/};
+
+async function fetchTasksFromServer(offset: Number, limit: Number)
+  : Promise&lt;Array&lt;any&gt;&gt; {/*...*/};
+
+function setStorageHash(/*...*/){/*...*/}
+					</code></pre>
+				</section>
+				<section>
+					Функции без сайд-эффектов в коде, тоже самое что и DI в ООП
+				</section>
+				<section>
+					Было
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+function fetchUsers(){
+  var users = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+  users.forEach(function (user, index) {
+    user.id = index
+  })
+  usersStorage.uid = users.length
+  return users
+}
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					<pre><code data-trim data-noescape>
+function fetchTasks(){
+  var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+  todos.forEach(function (todo, index) {
+    todo.id = index
+  })
+  todoStorage.uid = todos.length
+  return todos
+}
+					</code></pre>
+				</section>
+				<section>
+					Стало
+				</section>
+				<section data-transition="">
+					<pre><code data-trim data-noescape>
+async function fetch(/*...*/storage: Storage, fetch: Function)/*...*/ {
+  var items: Array&lt;any&gt; = await fetch(offset, limit)
+  setStorageHash(storage, users)
+  return users
+}
+
+<span class="fragment">async function fetchUsersFromServer(offset: Number, limit: Number)
+	  : Promise&lt;Array&lt;any&gt;&gt; {/*...*/};</span>
+
+<span class="fragment">async function fetchTasksFromServer(offset: Number, limit: Number)
+	  : Promise&lt;Array&lt;any&gt;&gt; {/*...*/};</span>
+
+<span class="fragment">function setStorageHash(/*...*/){/*...*/}</span>
+					</code></pre>
+				</section>
+				<section data-transition="none">
+					Чтобы писать DRY, нужно писать SOLID
+				</section>
+				<section data-transition="none">
+					Чтобы писать DRY, нужно писать <mark>SO</mark>L<mark>ID</mark>
+					<br>
+					<span class="fragment">(4 из 5)</span>
+				</section>
+				 <section>
+          Разве те, кто пишут демо для Vue.js дураки?
+        </section>
+				<section>
+          <p>Angular example</p>
+          <a href="https://github.com/tastejs/todomvc/blob/master/examples/angular2/app/services/store.js#L22">https://goo.gl/yVro1L</a>
+        </section>
+				<section>
+					Ленитесь правильно!
+				</section>
+				<section>
+					<img src="img/KISS.jpeg" alt="">
+				</section>
+				<section data-background-video="img/w.mp4">
+				</section>
+				<section>
+						twitter: @zolotyh
+						aazolotyh@gmail.com
+				</section>
+      </div>
+    </div>
+    <script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+        controls: false,
+        height: 1080,
+        history: true,
+        margin: 0.1,
+        maxScale: 2,
+        minScale: 0.7,
+        progress: true,
+        slideNumber: true,
+        width: 1920,
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
